@@ -6,20 +6,18 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * This is to be used with the FixedDataTable. It is a header icon
- * that allows you to reorder the corresponding column.
- *
- * @providesModule FixedDataTableColumnReorderHandle
+ * @providesModule ReorderHandle
  * @typechecks
  */
 
 import DOMMouseMoveTracker from 'DOMMouseMoveTracker';
 import React from 'react';
 import PropTypes from 'prop-types';
-import FixedDataTableEventHelper from 'FixedDataTableEventHelper';
 import cx from 'cx';
+import FixedDataTableEventHelper from 'FixedDataTableEventHelper';
 
-class FixedDataTableColumnReorderHandle extends React.PureComponent {
+
+class ReorderHandle extends React.Component {
   static propTypes = {
 
     /**
@@ -59,7 +57,7 @@ class FixedDataTableColumnReorderHandle extends React.PureComponent {
     }
   }
 
-  render() /*object*/ {
+  render() {
     var style = {
       height: this.props.height,
     };
@@ -95,7 +93,7 @@ class FixedDataTableColumnReorderHandle extends React.PureComponent {
     this.setState({
       dragDistance: 0
     });
-    this.props.onMouseDown({
+    this._onColumnReorderMouseDown({
       columnKey: this.props.columnKey,
       mouseLocation: {
         dragDistance: 0,
@@ -112,7 +110,7 @@ class FixedDataTableColumnReorderHandle extends React.PureComponent {
      * This prevents the rows from moving around when we drag the
      * headers on touch devices.
      */
-    if(this.props.touchEnabled) {
+    if (this.props.touchEnabled) {
       event.stopPropagation();
     }
   }
@@ -127,7 +125,7 @@ class FixedDataTableColumnReorderHandle extends React.PureComponent {
     this.frameId = null;
     this._mouseMoveTracker.releaseMouseMoves();
     this.props.columnReorderingData.cancelReorder = cancelReorder;
-    this.props.onColumnReorderEnd();
+    this.onColumnReorderEnd();
   }
 
   _updateState = () => {
@@ -137,7 +135,39 @@ class FixedDataTableColumnReorderHandle extends React.PureComponent {
     this.setState({
       dragDistance: this._distance
     });
-    this.props.onColumnReorderMove(this._distance);
+    this.props.moveColumnReorder(this._distance);
   }
-}
-export default FixedDataTableColumnReorderHandle;
+
+  _onColumnReorderMouseDown = (/*object*/ event) => {
+    this.props.startColumnReorder({
+      scrollStart: this.props.scrollX,
+      columnKey: this.props.columnKey,
+      width: this.props.width,
+      left: this.props.left
+    });
+  }
+
+  onColumnReorderEnd = () => {
+    const {
+      columnReorderingData: {
+        cancelReorder,
+        columnAfter,
+        columnBefore,
+        columnKey,
+      },
+      onColumnReorderEndCallback,
+    } = this.props;
+
+    this.props.stopColumnReorder();
+    if (cancelReorder) {
+      return;
+    }
+
+    onColumnReorderEndCallback({
+      columnAfter,
+      columnBefore,
+      reorderColumn: columnKey,
+    });
+  }
+};
+export default ReorderHandle;

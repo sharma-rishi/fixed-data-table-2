@@ -19,6 +19,7 @@ exports.DocsPages = {
     COLUMN_API: {location: 'api-column.html', title: 'Column'},
     COLUMNGROUP_API: {location: 'api-columngroup.html', title: 'Column Group'},
     CELL_API: {location: 'api-cell.html', title: 'Cell'},
+    RESIZEREORDERCELL_API: {location: 'api-resizereordercell.html', title: 'ResizeReorderCell'},
   },
 };
 
@@ -47,11 +48,29 @@ exports.ExamplePages = {
     title: 'Resizable columns',
     description: 'Table with drag and drop column resizing and a dummy "store" for persistence. The Last Name column demonstrates the ability to constrain to both a min- and max-width.',
   },
+  CUSTOM_RESIZE_EXAMPLE: {
+    location: 'example-customresize.html',
+    fileName: 'CustomResizeExample.js',
+    title: 'Custom Resize columns',
+    description: 'Table with drag and drop column resizing with custom resize plugin. The Last Name column demonstrates the ability to constrain to both a min-width and max-width.',
+  },
   REORDER_EXAMPLE: {
     location: 'example-reorder.html',
     fileName: 'ReorderExample.js',
     title: 'Reorderable columns',
     description: 'Table with drag and drop column reordering and a dummy "store" for persistence.',
+  },
+  CUSTOM_REORDER_EXAMPLE: {
+    location: 'example-customreorder.html',
+    fileName: 'CustomReorderExample.js',
+    title: 'Custom Reorder columns',
+    description: 'Table with drag and drop column reordering using custom reorder plugin.',
+  },
+  COLUMN_GROUPS_RESIZE_REORDER_EXAMPLE: {
+    location: 'example-column-groups-resize-reorder.html',
+    fileName: 'ColumnGroupsResizeReorderExample.js',
+    title: 'Resizable and Reorderable Column Groups',
+    description: 'Table with column groupings with the ability to reorder groups.',
   },
   SCROLL_TO_ROW_EXAMPLE: {
     location: 'example-scroll-to-row.html',

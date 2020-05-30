@@ -6,22 +6,22 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * This is to be used with the FixedDataTable. It is a read line
+ * This is to be used with the ResizerKnob. It is a read line
  * that when you click on a column that is resizable appears and allows
  * you to resize the corresponding column.
- *
- * @providesModule ColumnResizerLine
+ * @providesModule ResizerLine
  * @typechecks
  */
 
 import DOMMouseMoveTracker from 'DOMMouseMoveTracker';
 import React from 'react';
+import { Portal } from 'react-portal';
 import PropTypes from 'prop-types';
 
 import clamp from 'clamp';
 import cx from 'cx';
 
-class ColumnResizerLine extends React.PureComponent {
+class ResizerLine extends React.PureComponent {
   static propTypes = {
     visible: PropTypes.bool.isRequired,
 
@@ -86,11 +86,39 @@ class ColumnResizerLine extends React.PureComponent {
      * Whether the line should render in RTL mode
      */
     isRTL: PropTypes.bool,
+
+    /**
+     * The ResizerKnob DOM object instance.
+     */
+    instance: PropTypes.object,
+
+    /**
+     * The minimum width of the column.
+     */
+    minWidth: PropTypes.number,
+
+    /**
+     * The maximum width of the column.
+     */
+    maxWidth: PropTypes.number,
   }
 
   state = /*object*/ {
     width: 0,
     cursorDelta: 0,
+  }
+
+  /**
+   * TODO (sharma-rishi): Migrate instanceDetails to state.
+   * Currently, a mutable object is used.
+   * MouseTracker keeps changing state.cursorDelta even after mouse release.
+   * This could be causing the unwanted repositioning of the resizerLine when
+   * using this.setState with instanceDetails inside the state.
+   */
+  instanceDetails = {
+    left: 0,
+    top: 0,
+    knobWidth: 0,
   }
 
   componentDidUpdate() {
@@ -112,6 +140,14 @@ class ColumnResizerLine extends React.PureComponent {
     );
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.instance){
+      this.instanceDetails.top = nextProps.instance.getBoundingClientRect().top;
+      this.instanceDetails.left = nextProps.instance.getBoundingClientRect().left;
+      this.instanceDetails.knobWidth = nextProps.instance.getBoundingClientRect().width;
+    }
+  }
+
   componentWillUnmount() {
     this._mouseMoveTracker.releaseMouseMoves();
     this._mouseMoveTracker = null;
@@ -119,31 +155,37 @@ class ColumnResizerLine extends React.PureComponent {
 
   render() /*object*/ {
     var style = {
-      width: this.state.width,
+      width: 1,
       height: this.props.height,
+      top: this.instanceDetails.top,
+      position: 'fixed',
     };
     if (this.props.isRTL) {
-      style.right = this.props.leftOffset;
+      style.left = this.instanceDetails.left - this.state.width + this.props.initialWidth;
     } else {
-      style.left = this.props.leftOffset;
+       style.left = this.instanceDetails.knobWidth + this.instanceDetails.left + this.state.width - this.props.initialWidth;
     }
     return (
-      <div
-        className={cx({
-          'fixedDataTableColumnResizerLineLayout/main': true,
-          'fixedDataTableColumnResizerLineLayout/hiddenElem': !this.props.visible,
-          'public/fixedDataTableColumnResizerLine/main': true,
-        })}
-        style={style}>
+      <Portal>
         <div
-          className={cx('fixedDataTableColumnResizerLineLayout/mouseArea')}
-          style={{ height: this.props.height }}
-        />
-      </div>
+          className={cx({
+            'fixedDataTableColumnResizerLineLayout/main': true,
+            'fixedDataTableColumnResizerLineLayout/hiddenElem': !this.props.visible,
+            'public/fixedDataTableColumnResizerLine/main': true,
+          })}
+          style={style}>
+          <div
+            className={cx('fixedDataTableColumnResizerLineLayout/mouseArea')}
+            style={{ height: this.props.height }}
+          />
+        </div>
+      </Portal>
     );
   }
 
   _onMove = (/*number*/ deltaX) => {
+    this.instanceDetails.top = this.props.instance.getBoundingClientRect().top;
+    this.instanceDetails.left = this.props.instance.getBoundingClientRect().left;
     if (this.props.isRTL) {
       deltaX = -deltaX;
     }
@@ -165,6 +207,7 @@ class ColumnResizerLine extends React.PureComponent {
       this.state.width,
       this.props.columnKey
     );
+    this.props.clearState();
   }
 }
-export default ColumnResizerLine;
+export default ResizerLine;
